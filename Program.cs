@@ -1,7 +1,19 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System.Text;
 
-Console.WriteLine("Splitting mbox file into smaller");
+var arguments = Environment.GetCommandLineArgs();
+if (arguments == null || arguments.Length < 3)
+{
+    return;
+}
+var sourceName = arguments[1];
+var destName = arguments[2];
+var size = arguments[3];
+int maxSplitSize = 10;
+int.TryParse(size, out maxSplitSize);
+
+
+Console.WriteLine("Splitting mbox file into smaller files of {0} MB", maxSplitSize);
 
 static int indexOf(byte[] array, byte[] value)
 {
@@ -26,16 +38,18 @@ static int indexOf(byte[] array, byte[] value)
 
 try
 {
-    using (FileStream fsSource = new FileStream("all.mbox", FileMode.Open, FileAccess.Read))
+    using (FileStream fsSource = new FileStream(sourceName, FileMode.Open, FileAccess.Read))
     {
         byte[] searchText = Encoding.UTF8.GetBytes("\n\nFrom ");
         var totalLength = fsSource.Length;
         // Read the source file into a byte array.
-        int maxLength = 40 * 1024 * 1024;
+        int maxLength = maxSplitSize * 1024 * 1024;
         byte[] bytes = new byte[maxLength];
         int numBytesToRead = maxLength;
         int numBytesRead = 0;
         int fileCounter = 1;
+        var dir = Path.GetDirectoryName(destName) ?? "";
+        Directory.CreateDirectory(dir);
         while (totalLength > 0)
         {
             // Read may return anything from 0 to numBytesToRead.
@@ -55,12 +69,13 @@ try
             int v = indexOf(bytes, searchText);
             fsSource.Seek(v - numBytesToRead, SeekOrigin.Current);
 
-            var pathNew = string.Format("output/test-{0}.mbox", fileCounter++);
+            var pathNew = string.Format(destName, fileCounter++);
             // Write the byte array to the other FileStream.
             using (FileStream fsNew = new FileStream(pathNew, FileMode.Create, FileAccess.Write))
             {
                 fsNew.Write(bytes, 0, v);
             }
+            Console.Write(".");
         }
 
     }
@@ -69,3 +84,5 @@ catch (FileNotFoundException ioEx)
 {
     Console.WriteLine(ioEx.Message);
 }
+Console.WriteLine("");
+Console.WriteLine("Done!");

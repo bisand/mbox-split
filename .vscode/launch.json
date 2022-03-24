@@ -9,8 +9,12 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net6.0/mboxtest.dll",
-            "args": [],
+            "program": "${workspaceFolder}/bin/Debug/net6.0/mbox-split.dll",
+            "args": [
+                "all.mbox",
+                "out/split-{0}.mbox",
+                "40"
+            ],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "stopAtEntry": false
